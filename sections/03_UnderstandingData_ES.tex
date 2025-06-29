@@ -1,0 +1,93 @@
+\chapter{Compendiendo los datos}\label{cap:analisis}
+
+Antes de explicar las diversas técnicas que hemos empleado conviene conocer rapidamente la información con la que contamos, ya que contextualizar al lector sobre el problema es lo más apropiado para poder discutir más adelante posibles mejoras o vías de investigación. 
+
+El conjunto de datos que vamos a analizar se titula: Genomics of Drug Sensitivity in Cancer (GDSC) \cite{gdsc_kaggle}. Este dataset contiene información de distintos pacientes con cáncer, incluyendo su información genómica, relacionando cada caso estudiado con su correspondiente medicación, dosis y resultados observados. Esto es especialmente útil, ya que proporciona diversos indicadores sobre la efectividad de los medicamentos sobre cada persona. 
+
+Una  de las características más importantes de este dataset es que la información que contiene proviene de la base de datos COSMIC \cite{cosmic}, una de las colecciones más completas sobre casos de cáncer y su tratamiento. El objetivo de esta base de datos es proporcionar una fuente de información rica y detallada que sirva a futuros investigadores en el área de la oncología.
+
+\section{Descripción de las variables}
+
+El dataset \textit{Genomics of Drug Sensitivity in Cancer (GDSC)} contiene un total de cuatro archivos. En ellos se describe información sobre el estado de las células cancerígenas, las características del paciente y la medicación pautada. A continuación, comentaremos brevemente cada uno de los archivos junto con las variables que contienen, de modo que podamos tener una primera idea sobre la utilidad de los mismos:
+
+\begin{enumerate}
+    \item \textbf{GDSC2-dataset.csv}: Principalmente contiene información acerca de las medicinas empleadas y su efectividad en los distintos pacientes. Entre sus variables se encuentran:
+    \begin{itemize}
+        \item \textbf{DATASET}: Debido a que el objetivo del autor del dataset es mantener la información actualizada, emplea esta variable para indicar de qué versión proviene, ya que la base de datos \textit{COSMIC} se actualiza regularmente.
+        \item \textbf{NLME\_RESULT\_ID}: Identificador único del modelo NLME\footnote{Modelo no lineal de efectos mixtos} con el que se relaciona.
+        \item \textbf{NLME\_CURVE\_ID}: Identificador de la curva dosis-respuesta ajustada por el modelo anterior.
+        \item \textbf{COSMIC\_ID}: Como su nombre deja intuir, se trata del identificador con el que se conoce a este registro en la base de datos \textit{COSMIC}.
+        \item \textbf{CELL\_LINE\_NAME}: Nombre de la célula cancerígena del experimento.
+        \item \textbf{SANGER\_MODEL\_ID}: Identificador de la célula empleado por el instituto de Sanger \cite{sanger}.
+        \item \textbf{TCGA\_DESC}: Descripción del tipo de cáncer de acuerdo a \textit{The Cancer Genome Atlas}\footnote{Proyecto con el objetivo de catalogar las alteraciones genómicas debidas a la presencia de células cancerosas}.
+        \item \textbf{DRUG\_ID}: Identificador del medicamento recetado al paciente.
+        \item \textbf{DRUG\_NAME}: Nombre del medicamento empleado en el tratamiento.
+        \item \textbf{PUTATIVE\_TARGET}: Hace referencia al objetivo celular original del medicamento, es decir, qué línea celular se busca tratar con dicho medicamento.
+        \item \textbf{PATHWAY\_NAME}: la ruta biológica afectada por el fármaco, es decir, qué serie de interacciones celulares modifica la ingesta del medicamento.
+        \item \textbf{COMPANY\_ID}: Identificador de la compañía que provee el medicamento.
+        \item \textbf{WEBRELEASE}: Fecha en la que se hizo pública esta información en la \textit{web}.
+        \item \textbf{MIN\_CONC}: Concentración mínima empleada del medicamento durante el seguimiento.
+        \item \textbf{MAX\_CONC}: Concentración máxima empleada del medicamento durante el seguimiento.
+        \item \textbf{LN\_IC50}: Representa el logaritmo neperiano de la variable $IC_{50}$ (concentración inhibitoria media). Podríamos decir que un valor alto de esta variable simboliza que una persona necesita una dosis alta de el medicamento en cuestión para que este tenga efecto. Mientras que un valor bajo se corresponde con aquellos casos en los que el paciente ha necesitado una dósis baja para experimentar cambios significativos debidos a la ingesta.
+        \item \textbf{AUC}: Área bajo la curva, es una medida estadística que en este caso refleja la efectividad del medicamento.
+        \item \textbf{RMSE}: Medida de error conocida como Raíz del Error Cuadrático Medio del inglés \textit{Root Mean Square Error}. Indica la calidad de la predicción dosis-repuesta realizada por el modelo NLME.
+        \item \textbf{Z\_SCORE}: Medida de rendimiento estandarizada, tiene el objetivo de permitir comparaciones entre diferentes medicamentos y líneas celulares.
+      \end{itemize}
+
+    \item \textbf{Cell\_Lines\_Details.xlsx}: Contains information about the different cell lines, as well as data related to the patient's cancer. The variables it includes are:
+      \begin{itemize}
+        \item \textbf{Sample Name}: Unique identifier for the cell line sample.
+        \item \textbf{COSMIC identifier}: Unique ID from the COSMIC database for the cell line.
+        \item \textbf{Whole Exome Sequencing (WES)}: Genetic mutation data obtained through whole exome sequencing.
+        \item \textbf{Copy Number Alterations (CNA)}: Data on gene copy number changes in the cell line.
+        \item \textbf{Gene Expression}: Information on gene expression levels in the cell line.
+        \item \textbf{Methylation}: Data on DNA methylation patterns in the cell line.
+        \item \textbf{Drug Response}: Information on how the cell line responds to various drugs.
+        \item \textbf{GDSC Tissue descriptor 1}: Primary tissue type classification. Mainly indicates the type of cancer.
+        \item \textbf{GDSC Tissue descriptor 2}: Secondary tissue type classification. It can be interpreted as indicating the region affected by cancer.
+        \item \textbf{Cancer Type (matching TCGA label)}: Cancer type according to the TCGA classification.
+        \item \textbf{Microsatellite instability Status (MSI)}: Indicates the microsatellite instability status of the cell line.
+        \item \textbf{Screen Medium}: Growth medium used to culture the cell line.
+        \item \textbf{Growth Properties}: Characteristics of how the cell line grows in culture.
+      \end{itemize}
+
+      \item \textbf{Compounds-annotation.csv}: Los datos de este archivo se refieren principalmente al medicamento:
+      \begin{itemize}
+        \item \textbf{DRUG\_ID}: Identificador único del fármaco.
+        \item \textbf{SCREENING\_SITE}: Ubicación donde se realizó el cribado de la medicina.
+        \item \textbf{DRUG\_NAME}: Nombre del medicamento.
+        \item \textbf{SYNONYMS}: Nombres alternativos de la medicina.
+        \item \textbf{TARGET}: Dianas moleculares del fármaco.
+        \item \textbf{TARGET\_PATHWAY}: Vía(s) biológica(s) a las que se dirige el fármaco.
+      \end{itemize}
+
+    \item \textbf{GDSC\_DATASET.csv}: Este dataset en el resultado obtenido tras preprocesar los datos originales, provenientes de los otros tres. El autor ha llevado a cabo un profundo análisis de los datos, con el objetivo de reducir el ruido y de añadir la mayor cantidad de información útil posible. Entre las variables que lo componen se encuentran:
+      \begin{itemize}
+          \item \textbf{COSMIC\_ID}
+          \item \textbf{CELL\_LINE\_NAME}
+          \item \textbf{TCGA\_DESC}
+          \item \textbf{DRUG\_ID}
+          \item \textbf{DRUG\_NAME}
+          \item \textbf{LN\_IC50}
+          \item \textbf{AUC}
+          \item \textbf{Z\_SCORE}
+          \item \textbf{GDSC Tissue descriptor 1}
+          \item \textbf{GDSC Tissue descriptor 2}
+          \item \textbf{Cancer Type (matching TCGA label)}
+          \item \textbf{Microsatellite instability Status (MSI)}
+          \item \textbf{Screen Medium}
+          \item \textbf{Growth Properties}
+          \item \textbf{CNA}
+          \item \textbf{Gene Expression}
+          \item \textbf{Methylation}
+          \item \textbf{TARGET}
+          \item \textbf{TARGET\_PATHWAY}
+      \end{itemize}
+\end{enumerate}
+
+
+\section{Conociendo los datos}
+
+Tras haber hablado brevemente sobre qué variables están incluidas en el conjunto de datos, es buen momento para explorar el dataset un poco y observar qué naturaleza tienen los datos. El objetivo de este paso es ser conscientes de cómo es la información de partida con vista a trabajar mejor con ella, ya que no podemos tratar todos los conjuntos del mismo modo de forma mecánica, debemos entender qué estamos haciendo en todo momento y por qué.
+
+A pesar de que contamos con un dataset que ha sido preprocesado por el autor, vamos a emplear los archivo originales, todo ello con el fin de no obtener unos resultados que puedan estar comprometidos por acciones de un tercero. Por ello, unimos los tres archivos originales en uno solo:

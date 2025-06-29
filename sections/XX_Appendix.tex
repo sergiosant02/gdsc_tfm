@@ -1,0 +1,138 @@
+\appendix
+\chapter*{Appendix}
+\addcontentsline{toc}{chapter}{Appendix}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:obsoletes,
+    caption={Find obsolete variables and determine the size of each variable's domain.}
+]{code/datat_representation/obsoletes.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:inconsistencesNameId,
+    caption={Check for matching values between the Drug id and Drug name variables.}
+]{code/datat_representation/inconsistences_name_id.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:supplierConsistence,
+    caption={Code intended to check the different suppliers assigned to each drug name.}
+]{code/datat_representation/supplier_name_consistence.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:columnTransformer,
+    caption={Application of ColumnTransformer to map the data.}
+]{code/datat_representation/column_transformer.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:ordinalEncoder,
+    caption={Encoding data in numerical format using Ordinal Encoder.}
+]{code/datat_representation/ordinal_encoder.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:knnImputer,
+    caption={Imputation of values using KnnImputer.}
+]{code/datat_representation/knn_imputer.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:pythonGenerateNet,
+    caption={Function to generate a neural network. This code generates a very simple dense network, but we only want it to know which loss function to choose.}
+]{code/loss_checker/generate_model.py}
+\vspace{10pt}
+
+\lstinputlisting[
+    language=Python,
+    label=cod:pythonCompileNet,
+    caption={Function to compile, show the losses during learning, do a evaluation with test set and return the model trained.}
+]{code/loss_checker/train_model.py}
+\vspace{10pt}
+
+\lstinputlisting[
+    language=Python,
+    label=cod:pythonShowMetrics,
+    caption={Functions to show some metrics about the model. Also, we display a plot where you can see how much near is the predicted values from the real ones.}
+]{code/loss_checker/evaluate.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:reg_addition_desbalanced,
+    caption={Definition of Soft-ordering with 1D convolutional architecture using tensorflow.}
+]{code/neural_nets/reg_addition_desbalanced.py}
+\vspace{10pt}
+
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:reg_addition_balanced,
+    caption={Definition of Soft-ordering with 1D convolutional architecture using SiLU as activation function.}
+]{code/neural_nets/reg_addition_balanced.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:tsne,
+    caption={Calculation of dimensionality reduction using t-SNE for data representation while respecting local distances.}
+]{code/datat_representation/tsne.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:umap,
+    caption={Calculation of dimensionality reduction using UMAP for data representation while respecting global and local distances.}
+]{code/datat_representation/umap.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:class_net_v1,
+    caption={First adaptation of the regressor network in the process of obtaining a classifier.}
+]{code/neural_nets/classification_net_v1.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:class_net_v2,
+    caption={Testing a different function to check for changes in model performance.}
+]{code/neural_nets/classification_net_v2.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:class_net_v3,
+    caption={Assigning importance to target variables for the purpose of obtaining better results in \(LN\_IC_{50}\).}
+]{code/neural_nets/classification_net_v3.py}
+\vspace{10pt}
+
+\vspace{10pt}
+\lstinputlisting[
+    language=Python,
+    label=cod:class_net_v4,
+    caption={Definition of a custom error function, including categorical cross entropy and MSE.}
+]{code/neural_nets/classification_net_v4.py}
+\vspace{10pt}
