@@ -17,8 +17,8 @@ To fully comprehend this research, it is necessary to understand the following c
 There are numerous options available when selecting the appropriate layers for a neural network, each serving a distinct and well-defined purpose. Given the wide variability of existing architectures, this study will briefly describe the most influential layer types employed during the research, focusing on those that had the most significant impact on model performance and learning behavior.
 
 \begin{itemize}
-    \item Dense: Also known as fully connected, it is one of the simplest and best-known layers. Each neuron receives one input from each neuron in the previous layer and produces one output per neuron.
-    \item convolutional 1D layers: This is a layer used in neural networks to process sequential information, such as text, audio or genes. It allows one-dimensional convolution filters to be applied, thereby extracting relationships and patterns from the data. The output of a Conv1D layer is a feature map that captures the patterns extracted from the input data. These maps highlight local relationships in the sequence, such as recurring motifs or trends. However, one potential drawback of stacking many convolutional layers is that the original low-level information can become increasingly abstract or diluted. While deeper layers tend to capture more complex features, they may also lose fine-grained details present in the raw data.
+    \item \textbf{Dense}: Also known as fully connected, it is one of the simplest and best-known layers. Each neuron receives one input from each neuron in the previous layer and produces one output per neuron.
+    \item \textbf{Convolutional 1D layers}: This is a layer used in neural networks to process sequential information, such as text, audio or genes. It allows one-dimensional convolution filters to be applied, thereby extracting relationships and patterns from the data. The output of a Conv1D layer is a feature map that captures the patterns extracted from the input data. These maps highlight local relationships in the sequence, such as recurring motifs or trends. However, one potential drawback of stacking many convolutional layers is that the original low-level information can become increasingly abstract or diluted. While deeper layers tend to capture more complex features, they may also lose fine-grained details present in the raw data.
 \end{itemize}
 
 \subsection{Regularization methods}
@@ -61,7 +61,7 @@ The main advantage of SHAP over other explainability algorithms is that it provi
 In addition, the implementation in Python \cite{shap} provides numerous graphs, thus facilitating the understanding of the data. For example:
 
 \begin{itemize}
-    \item Summary plot: This graph combines feature importance with their directional effect on the model's output, providing an intuitive representation of which variables are most influential, whether they contribute to an increase or decrease in predictions, and the range of input values that drive such behavior. The representation encompasses the entire dataset.
+    \item \textbf{Summary plot}: This graph combines feature importance with their directional effect on the model's output, providing an intuitive representation of which variables are most influential, whether they contribute to an increase or decrease in predictions, and the range of input values that drive such behavior. The representation encompasses the entire dataset.
     
     \begin{figure}[H]
         \centering
@@ -78,7 +78,7 @@ In addition, the implementation in Python \cite{shap} provides numerous graphs, 
     \end{itemize}
     
 
-    \item Force plot: Used for local explainability. It provides the reasons why the prediction is higher or lower for an unique instance. In this type of graph, contrasting colors are used to show how each variable influences the prediction. Features that push the prediction higher are typically shown in red, while those that push it lower are shown in blue. This visualization helps to clearly distinguish between the variables that support and those that oppose the model's output for a specific instance.
+    \item \textbf{Force plot}: Used for local explainability. It provides the reasons why the prediction is higher or lower for an unique instance. In this type of graph, contrasting colors are used to show how each variable influences the prediction. Features that push the prediction higher are typically shown in red, while those that push it lower are shown in blue. This visualization helps to clearly distinguish between the variables that support and those that oppose the model's output for a specific instance.
     \begin{figure}[H]
         \centering
         \includegraphics[width=1\textwidth]{figures/shap/force_plot.png}
@@ -88,7 +88,7 @@ In addition, the implementation in Python \cite{shap} provides numerous graphs, 
 
     Figure~\ref{fig:forcePlot} shows the variables that support increasing the value of the model output, while indicating that the Growth Properties variable is the only one that opposes this increase.
 
-    \item Dependence plot: Used for global explainability. Show how a feature's value affect its SHAP value across the entire dataset helping to identify the relationship.
+    \item \textbf{Dependence plot}: Used for global explainability. Show how a feature's value affect its SHAP value across the entire dataset helping to identify the relationship.
     \begin{figure}[H]
         \centering
         \includegraphics[width=1\textwidth]{figures/shap/depence_plot.png}
