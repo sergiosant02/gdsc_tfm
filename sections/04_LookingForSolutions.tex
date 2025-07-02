@@ -205,7 +205,7 @@ In this case the predictions over the test set were a little bit worse that the 
 
 Although at first glance the results shown in Figures~\ref{fig:mse_reg_net_result} and \ref{fig:logcosh_reg_net_result} may appear nearly identical, a more in depth analysis reveals key differences. In Figure~\ref{fig:mse_reg_net_result}, the model trained with MSE appears to exhibit slightly less dispersion in its predictions, as the plot presents a more defined shape compared to that of Figure~\ref{fig:logcosh_reg_net_result}.
 
-However, the evaluation of training progress tells a different story. In Figure~\ref{fig:mse_reg_net_train}, it can be observed that after only a few training iterations, the model reaches a plateau, showing little to no further improvement—an indication of early stagnation. In contrast, Figure~\ref{fig:logcosh_reg_net_train} displays a continued downward trend in the loss function, even in the final training stages. This suggests that the model trained with Log-Cosh loss retains the potential for further optimization, making it a more promising candidate than the one trained with MSE.
+However, the evaluation of training progress tells a different story. In Figure~\ref{fig:mse_reg_net_train}, it can be observed that after only a few training iterations, the model reaches a plateau, showing little to no further improvement, an indication of early stagnation. In contrast, Figure~\ref{fig:logcosh_reg_net_train} displays a continued downward trend in the loss function, even in the final training stages. This suggests that the model trained with Log-Cosh loss retains the potential for further optimization, making it a more promising candidate than the one trained with MSE.
 
 
 \begin{figure}[H]
@@ -523,15 +523,24 @@ After that, the model was trained again. Two training were executed, the fir, us
 
 \section{A classification problem}
 
-Until now, research has been conducted using target variables in continuous format, with the exception of Drug Response, obtaining, by means of neural networks, a regressor capable of predicting the \(LN\_IC_{50}\) variable and obtaining an RMSE error of less than 0.5. Having acquired this base, it is the ideal moment to bring our predictor closer to a case closer to real life. To achieve the variable \(LN\_IC_{50}\) is discretised in such a way that it could be divided it into 30 ranges of equal distance between them, this allows to obtain an approximation to what would be a dose. This number of ranges was chosen because it provided the best balance between a sufficiently high number of categories and the overall accuracy of the predictions. 
+The previous section has focused on continuous target variables, except for Drug Response, successfully developing a neural network-based regressor capable of predicting the \(LN\_IC_{50}\) variable with high accuracy, achieving an RMSE below 0.5. Building upon this strong foundation, the next step aims to bring the model closer to a real-world clinical application. To do this, the continuous \(LN\_IC_{50}\) variable is discretised into 25 equally spaced intervals, offering a practical approximation of dosage levels. 
 
-In other words, the range in which the value of \(LN\_IC_{50}\) is found must be understood as the number of pills the patient should take. This idea makes a lot of sense, as getting closer to the concept of prescribing a certain number of pills allows to be somewhat more lax with the error made. For example, if two ibuprofens are taken instead of one, the negative effect is not appreciable. However, this is not the case when six are taken instead of one. Therefore, it can be inferred that making a slight error is not as serious as making a large one, an aspect that should certainly be considered when calculating the error.
+This number of intervals has not been selected at random, but rather as a result of analysing the growth of entropy as a function of the number of divisions, particularly by observing the slope of this evolution. Maximising entropy allows to obtain a highly representative set, but an excessive number of divisions can introduce noise or redundancy. To avoid this problem, the slope of the entropy curve is analysed in order to identify an inflection point that indicates a balance between representativeness and stability. Thus, Figure~\ref{fig:intervalEntropy} illustrates the evolution of both entropy and the slope of its evolution. Based on this information, a division of 25 intervals is proposed, as this represents a midpoint between the slope and the increase in entropy. To carry out these operations, the code shown in Listing~\ref{cod:intervalEntropy} has been used.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/intervalEntropy.png}
+    \caption{Representation of entropy evolution based on the number of bins.}
+    \label{fig:intervalEntropy}
+\end{figure}
+
+The range in which the value of \(LN\_IC_{50}\) is found must be understood as the number of pills the patient should take. This idea makes a lot of sense, as getting closer to the concept of prescribing a certain number of pills allows to be somewhat more lax with the error made. For example, if two ibuprofens are taken instead of one, the negative effect is not appreciable. However, this is not the case when six are taken instead of one. Therefore, it can be inferred that making a slight error is not as serious as making a large one, an aspect that should certainly be considered when calculating the error.
 
 Before any model is trained, the data will be visualized graphically to assess their separability, specifically, to determine whether the class ranges overlap in feature space or not. Since the dataset, after applying the ordinal encoder, contains more than 20 variables, direct representation is not feasible. Therefore, a dimensionality reduction process will be performed to project the data into 2D and 3D spaces, allowing for easier interpretation.
 
 First, t-SNE \cite{cai2022theoreticalfoundationstsnevisualizing} will be used to perform the compression process. This algorithm is highly effective at capturing local relationships; that is, within a group, the relationships between data points can be accurately preserved. This will allow an assessment of whether points belonging to the same group are located close together in space. If they are not, it indicates higher data variance, which would make it more challenging for a model to correctly predict group membership.
 
-For this purpose, the t-SNE method from scikit-learn \cite{scikit-learn-tsne} will be used, as it enables visualization with only a few lines of code. However, the algorithm is computationally expensive. To accelerate execution, the data obtained from the initial run will be saved using NumPy, so that subsequent executions can bypass the computational step. This process is illustrated in Listing~\ref{cod:tsne}.
+For this purpose, the t-SNE method from scikit-learn \cite{scikit-learn-tsne} will be used. However, the algorithm is computationally expensive. To accelerate execution, the data obtained from the initial run will be saved using NumPy, so that subsequent executions can bypass the computational step. This process is illustrated in Listing~\ref{cod:tsne}.
 
 \begin{figure}[H]
     \centering
@@ -554,7 +563,7 @@ As a result, it can be observed in Figure~\ref{fig:umap} that the clusters are i
 \end{figure}
 
 
-\subsection{Discovering the correct group using Neural Networks}
+\section{Discovering the correct group using Neural Networks}
 
 The objective of this section is to estimate the number of doses required by a patient using a neural network. To accomplish this, the previously developed architecture must be adapted to effectively model the problem, beginning with the dataset that includes a discretized version of the target variable.
 
@@ -569,19 +578,18 @@ The process has been divided into three main stages:
 \subsubsection{Adaptation of the existing architecture}
 
 Building on the previously trained neural network model, the objective of this section is to obtain a new network capable of estimating the number of doses of a drug needed to treat a person. 
+Acquiring a certain degree of intuition about how current architecture deals with classification issues is crucial to making changes that truly add value. Therefore, initially the changes will be subtle, i.e., only very specific sections of the architecture will be modified. In this way, after each modification that leads to an improvement in performance, it will be translated into the new goal to be achieved. To achieve this, it is necessary to modify both the loss function and the output layer of the model to make the predictions compatible with the classification.
 
-To gain an insight into the initial state of the problem, initial training should be carried out with only the necessary changes. In this way, a minimum performance level is established. To achieve this, it is necessary to change both the loss function and the model output.
-
-Thus, the error function was replaced by categorical cross-entropy, with the aim of testing the model's accuracy. This loss metric is one of the simplest. With regard to the model output, Softmax is the most recommended for this type of classification problem, as it provides a probability for each possible class. 
+Thus, the error function was replaced by categorical cross-entropy, which is one of the most used, with the aim of testing the model's accuracy. With regard to the model output, Softmax is the most recommended for this type of classification problem, as it provides a probability for each possible class. 
 
 As there is more than one target variable, the network must have more than one output layer simultaneously, as can be seen in Listing~\ref{cod:class_net_v1}.
 
-Once model training began, it successfully completed 100 epochs. The learning curves, shown in Figure~\ref{fig:train_class_net_v1}, reveal that the model achieves better performance on the validation set than on the training set,an uncommon but noteworthy behavior. However, despite this apparent advantage, the overall quality of the predictions remains limited, with accuracy values not exceeding 0.4, as can be seen in Table~\ref{tab:best_val_ln_ic50_metrics_net_class_v1}. This indicates that, although generalization may be occurring, the model still struggles to produce reliable predictions.
+Once model training began, it successfully completed 100 epochs. The learning curves, shown in Figure~\ref{fig:train_class_net_v1}, reveal that the model achieves better performance on the validation set than on the training set, an uncommon but noteworthy behavior. However, despite this apparent advantage, the overall quality of the predictions remains limited, with accuracy values not exceeding 0.35, as can be seen in Table~\ref{tab:best_val_ln_ic50_metrics_net_class_v1}. This indicates that, although generalization may be occurring, the model still struggles to produce reliable predictions. Furthermore, depending on the progress of the training, the model would be able to improve if the number of available epochs were increased.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{figures/neural_net_classification/classification_mse_v1.png}
-    \caption{Model training progress during the first adaptation. This reflects a validation advantage over training.}
+    \caption{Progress of model training after replacing the error function with cross-entropy and the output layer with a multi-class layer with softmax activation function. Better performance is observed in the validation set compared to the training set.}
     \label{fig:train_class_net_v1}
 \end{figure}
 
@@ -591,8 +599,8 @@ Once model training began, it successfully completed 100 epochs. The learning cu
     \hline
     \textbf{Validation Metric} & \textbf{Best Value} \\
     \hline
-    LN\_IC50\_Categorical\_Accuracy & 0.355 \\
-    LN\_IC50\_Loss & 1.580 \\
+    LN\_IC50\_Categorical\_Accuracy & 0.349 \\
+    LN\_IC50\_Loss & 2.505 \\
     \hline
     \end{tabular}
     \caption{Best validation results for LN\_IC50 metrics.}
@@ -601,7 +609,9 @@ Once model training began, it successfully completed 100 epochs. The learning cu
 
 \subsubsection{Expansion paths}
 
-Refining the architecture at this point in the research is a very important task, so it is necessary to be very careful with the changes made. For this reason, two different alternatives will be evaluated. On the one hand, the loss function will be replaced by another that better fits unbalanced data. Since the histogram in Figure~\ref{fig:lnic50_distribution} shows there are classes with few examples within the dataset. On the other hand, there is the possibility of assigning priorities to the output layers, so that the network tends to favour improving the predictions of one variable over another. The current model has 5 outputs, so this idea could represent a significant improvement.
+Refining the architecture so that the model is able to correctly capture the patterns present in the dataset is the next step towards achieving better results. Thus, the architecture currently proposed to act as a classifier has one main weakness: the error function. This is because it is unable to adjust to unbalanced data, for this reason it will be replaced by categorical focal cross-entropy. Depending on which one yields the most promising results, one or the other will be selected to form part of a customised function that takes into account the importance of large errors.
+
+Additionally, giving greater relevance to the \(LN\_IC_{50}\) variable will help the model focus its efforts on correctly predicting this output. Without neglecting the extra knowledge provided by the others, thus serving as a support.
 
 \subsubsection{Expansion paths: Loss function}
 
@@ -637,21 +647,23 @@ Since the implementation is being carried out using the Tensorflow API, making t
     \hline
     \textbf{Validation Metric} & \textbf{Best Value} \\
     \hline
-    LN\_IC50\_Categorical\_Accuracy & 0.364 \\
-    LN\_IC50\_Loss & 0.252 \\
+    LN\_IC50\_Categorical\_Accuracy & 0.383 \\
+    LN\_IC50\_Loss & 0.504 \\
     \hline
     \end{tabular}
     \caption{Best validation results for LN\_IC50 metrics using focal loss.}
     \label{tab:best_val_ln_ic50_focal}
 \end{table}
 
-The results obtained after this new modification can be extremely interesting. Both models, the previous one and this one, perform better on the validation set than on the training set. However, in the previous case, it can be seen that it was necessary to reduce the learning rate halfway through training in order to continue improving. In this case, the learning rate did not need to be reduced to obtain a substantial improvement in performance, as illustrated in Figure~\ref{fig:train_class_net_v2}. After reducing it in the second training, no significant improvement is observed as can be seen in Table~\ref{tab:best_val_ln_ic50_focal}. 
+The results obtained after this new modification are extremely interesting. Both models, the previous one and this one, perform better on the validation set than on the training set. However, in this case, it can be seen that it was necessary to reduce the learning rate halfway through training in order to continue improving. In the previous case, the learning rate did not need to be reduced to obtain a substantial improvement in performance, as illustrated in Figure~\ref{fig:train_class_net_v1}. 
+
+In this second training session, although better results are obtained than in the previous one, as shown in Table~\ref{tab:best_val_ln_ic50_focal}, the model's progression is less promising, as can be seen in igure~\ref{fig:train_class_net_v2}.
 
 This can lead to two main ideas:
 
 \begin{itemize}
-    \item The dataset has some unbalanced classes. Therefore, to learn to classify them correctly, the first model must reduce the learning rate in order to increase its accuracy. The second model, thanks to the loss function it incorporates, does not require this reduction.
-    \item In turn, the first model was able to significantly improve the quality of its predictions after decreasing its learning rate, while the second did not. This could mean that by using cross-entropy the model can improve more, while with the focal version, it seems that training has reached a plateau.
+    \item The dataset contains some unbalanced classes. Therefore, in order to learn how to classify them correctly, the first model must invest more time, while the second, thanks to the focal error function, is able to learn faster. However, this second model reaches a plateau even after reducing the learning rate.
+    \item Although the model that uses categorical error learns more slowly, it seems to have more potential for improvement, since in the case of the model that incorporates focal loss, the performance slope is less pronounced.
 \end{itemize}
 
 \subsubsection{Expansion paths: Priorities}
@@ -675,15 +687,15 @@ Thanks to this approach, a considerable improvement was achieved during training
     \hline
     \textbf{Validation Metric} & \textbf{Best Value} \\
     \hline
-    LN\_IC50\_Categorical\_Accuracy & 0.380 \\
-    LN\_IC50\_Loss & 1.527 \\
+    LN\_IC50\_Categorical\_Accuracy & 0.384 \\
+    LN\_IC50\_Loss & 2.496 \\
     \hline
     \end{tabular}
     \caption{Best validation results for \(LN\_IC_{50}\) metrics after applying output weighting.}
     \label{tab:best_val_ln_ic50_wheighting}
 \end{table}
 
-Everything seems to indicate that adjusting the weights of the outputs provides an increase in the model's performance. Likewise, during this training, it can be observed how, once again, the categorical cross-entropy error function has provided the necessary dynamism to improve the quality of the predictions by reducing the learning rate.
+Everything seems to indicate that adjusting the weights of the outputs provides an increase in the model's performance. Likewise, during this training, it can be observed how, once again, the categorical cross-entropy error function has provided the necessary dynamism to improve the quality of the predictions by reducing the learning rate in around the epoch 80.
 
 \subsubsection{Refinement of the loss function}
 
@@ -729,22 +741,22 @@ As a result of all these modifications, the model significantly increases perfor
     \hline
     \textbf{Test Metric} & \textbf{Value} \\
     \hline
-    MSE & 1.879 \\
-    RMSE & 1.370 \\
-    R\textsuperscript{2} & 0.8693 \\
+    MSE & 1.218 \\
+    RMSE & 1.103 \\
+    R\textsuperscript{2} & 0.878 \\
     \hline
     \end{tabular}
-    \caption{Regression performance metrics on the test set for LN\_IC\_50.}
+    \caption{Regression performance metrics on the test set for LN\_IC\_50 using a neural network with custom loss function.}
     \label{tab:test_regression_metrics:net_class_v4}
 \end{table}
 
-However, there is one aspect that cannot be assessed from the graph in Figure~\ref{fig:train_class_net_v4}. In this iteration, an error function has been defined that should prevent large discrepancies between reality and prediction. This feature is corroborated in Figure~\ref{fig:train_class_net_v4_barplot}, which illustrates a histogram in which the highest percentage of errors are between 0 and 2 doses. Therefore, the model effectively meets expectations.
+However, there is one aspect that cannot be assessed from the graph in Figure~\ref{fig:train_class_net_v4}. In this iteration, an error function has been defined that should prevent large discrepancies between reality and prediction. This feature is corroborated in Figure~\ref{fig:train_class_net_v4_barplot}, which illustrates a histogram in which the highest percentage of errors are between 0 and 1 doses. Therefore, the model effectively meets expectations.
 
 Reaching this point in the research represents a milestone in the study, as the model is capable of deciding how many doses to administer, with a single-dose error in most cases. This allows for better management of prescriptions, thus improving patients' quality of life.
 
-\subsection{Testing XGBoost as a classifier}
+\section{Testing XGBoost as a classifier}
 
-In this section, the method applied is XGBoost in a multi-class classification setting, using teh discretised variable \(LN\_IC_{50}\) as in previous experiments. The aim is to evaluate its predictive power and compare it with the results obtained using deep learning approaches.
+In this section, the method applied is XGBoost in a multi-class classification setting, using the discretised variable \(LN\_IC_{50}\) as in previous experiments. The aim is to evaluate its predictive power and compare it with the results obtained using deep learning approaches.
 
 Beyond accuracy, it is particularly interesting how XGBoost handles the ordinal nature of the target variable, where misclassifying a class by 1 is much less serious than misclassifying it by 5 or more. To achieve this, evaluations will be carried out using standard metrics, such as accuracy, but also some that take into account the distance between the prediction and the actual classes, including MAE and RMSE.
 
@@ -761,7 +773,7 @@ The flaw in this approach is that it does not take into account the severity of 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{figures/xgboost_class/xgboost_class_v1_softmax.png}
-    \caption{Representation of the absolute error committed with the test set using XGBoost and softmax. A substantial increase in error is observed, with the largest error committed being 15.}
+    \caption{Representation of the absolute error committed with the test set using XGBoost and softmax. A substantial increase in error is observed, with the largest error committed being 11.}
     \label{fig:barplot_xgboost_v1}
 \end{figure}
 
@@ -771,9 +783,9 @@ The flaw in this approach is that it does not take into account the severity of 
     \hline
     \textbf{Test Metric} & \textbf{Value} \\
     \hline
-    MSE & 4.092 \\
-    RMSE & 2.022 \\
-    R\textsuperscript{2} & -18.148 \\
+    MSE & 2.766 \\
+    RMSE & 1.663 \\
+    R\textsuperscript{2} & 0.724 \\
     \hline
     \end{tabular}
     \caption{Performance metrics on the test set for \(LN\_IC_{50}\) using XGBoost classifier predictions interpreted as numerical outputs.}
@@ -782,14 +794,14 @@ The flaw in this approach is that it does not take into account the severity of 
 
 \subsubsection{Prioritizing distance to the right class}
 
-Applying a function that shows the importance of being close to the correct class should improve the quality of the model. In the case of XGBoost, the function used is squarederror, which implements the mean square error (MSE). In addition, it is necessary to modify the evaluation metric, in this case the root mean square error (RMSE), to facilitate the interpretation of progress.
+Applying a function that shows the importance of being close to the correct class should improve the quality of the model. In the case of XGBoost, the function used is the mean square error (MSE). In addition, it is necessary to modify the evaluation metric, in this case the root mean square error (RMSE), to facilitate the interpretation of progress.
 
 After a series of training sessions, a result similar to that of neural networks was obtained, without reaching the same quality, but improving on the previous version. This can be seen in Figure~\ref{fig:barplot_xgboost_v2}, which shows how the proportion changes, increasing the number of cases in which only one error is made, or even none at all. It also reduces all the others, as reflected in the metrics in Table~\ref{tab:xgboost_classification_metrics_v2}, where the maximun error is 12.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{figures/xgboost_class/xgboost_class_v2_mse.png}
-    \caption{Representation of the absolute error committed with the test set using XGboost and MSE. A substantial increase in error is observed, with the largest error committed being 15.}
+    \caption{Representation of the absolute error committed with the test set using XGboost and MSE. A substantial increase in error is observed, with the largest error committed being 12.}
     \label{fig:barplot_xgboost_v2}
 \end{figure}
 
@@ -816,38 +828,38 @@ By applying the same distance-aware approach used in neural networks to the XGBo
 \end{itemize}
 
 
-\section{Shap: The reasons must be known.}
+\section{SHAP: The reasons must be known.}
 
 This chapter focuses on applying all the knowledge acquired during the research to understand what the best trained models have learned. The objective is to extract the linear or non-linear relationships that the model has learned from the data.
 
 This approach allows, on the one hand, to validate the correct learning of the model. For example, it could be the case that to infer the response, the model looks at patterns that have nothing to do with the efficiency of a drug, as would be the case with a model that groups several cases because it identifies that they have the same doctor. This knowledge, although entirely valid, implies that the learning has not acquired the quality it should, as it should predict based on a patient's data, not on who is treating them. On the other hand, knowing the features on which a model is based and to what extent can represent a major advance in cancer research, open up new avenues of research or demonstrate previously unknown theories.
 
-Explainability aims to extract as much knowledge as possible from model learning, giving regressors preference over classifiers. This is because, in order to perform any type of classification in the domain of a regression problem, it is necessary to discretise the target variables, thereby losing information that could be useful. For this reason, even if regression and classification models have been trained, the choice of which model to use is limited to regressors.
+Throughout this research, regressors based on two different modeling approaches were trained. First, models based on neural networks were trained, which are particularly capable of finding non-linear and complex relationships. Then, research was conducted on the feasibility of using tree-based models, hough generally less performant than neural networks, offer faster training times and lower computational cost. Thus, there are models based in two different type of algorithm, a network-based model and a tree-based model. Among them, the model that provides the best results should be selected, as it is the one that generalises best. Thus, given that the best network-based model, whose metrics are shown in Table~\ref{tab:metrics_multiplicative_gating}, offers much better performance than the tree-based model, whose metrics are shown in Table~\ref{tab:model_performance_xgboost}, the network-based architecture should be used.
 
-Throughout this research, regressors based on two different modeling approaches were trained. First, models based on neural networks were trained, which are particularly capable of finding non-linear and complex relationships. Then, research was conducted on the feasibility of using tree-based models, hough generally less performant than neural networks, offer faster training times and lower computational cost. Thus, there are two candidates, a network-based model and a tree-based model. Given that the aim of this section is to learn more about the problem, he one that provides the best results must be selected t, which is the network-based model. This can be seen in Tables~\ref{tab:model_performance_xgboost, tab:metrics_multiplicative_gating}, which show the performance of the best models of both architectures in the test set.
+To understand the reasons behind the neural network's predictions, the technique used in this study was SHAP, as it allows explainability to be applied not only locally but also globally.
 
-
-To apply explainability, the technique used is Shap values. It is very important to remember that these values are calculated based on a group of predictions, so choosing an appropriate set is crucial to obtaining meaningful results. For example, if the selected set only contains negative predictions, the analysis will not apply to all the data, which could lead to future misconceptions. Fortunately, the library used has a set of utilities, including shap.kmeans, which allows you to locate the clusters in the data set and select the most representative values based on their centroids.
-
-Once the data on which to calculate the Shap values has been selected, it is necessary to choose the appropriate kernel based on the type of model. In the case of neural networks, there is more than one, due to a compatibility issue between versions, "KernelExplainer" has been selected. The next step is to calculate the values. Given that Shap values are cumulative, it is useful to save them, as knowing the points selected to calculate them and the results they provide allows for further calculations at a later time or with another hardware.
-
-Although there are many types of graphs for representing Shap values, the one used in this study is a "summary plot". This representation provides a very intuitive visualisation of what is happening within the model, slightly dispelling that black box perception.
+In Figure~\ref{fig:shap_values}, the SHAP values of a set of 200 examples are shown. This representation provides a very intuitive visualisation of what is happening within the model, slightly dispelling that black box perception.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{figures/shap_values.png}
-    \caption{Shap "summary plot" graph. This one shows how the model behaves based on the values of its most representative variables.}
+    \includegraphics[width=1\textwidth]{figures/shap/shap_values.png}
+    \caption{Shap summary plot with 200 examples. This one shows how the model behaves based on the values of its most representative variables.}
     \label{fig:shap_values}
 \end{figure}
 
-The representation of Shap values, illustrated in Figure~\ref{fig:shap_values}, provides information about the model's trend in output values, based on its most representative variables. By way of explanation:
+To interpret the image, it is important to note that all variables beginning with "DRUG\_NAME", "Screen Medium", or "SANER" have been one-hot encoded. This encoding explains the pattern of numerous blue dots and only a few red ones, indicating that the model primarily values the absence of these features. In contrast, the variable "DRUG\_ID" retains its original numerical values. Thus, the blue dots corresponding to these variables indicate that they are not present in the instance. For example, in the case of drug names, the blue dots represent those cases in which the drug in question has not been administered.
 
-\begin{itemize}
-    \item Each row represents the most influential variables for a given prediction, ordered from highest to lowest based on their contribution to the model's output.
-    \item The X-axis represents the prediction value, which is higher the further to the right the point is located.
-    \item Each point represents an instance of the dataset, with the position on the horizontal axis representing the impact on the variable. Cases closer to red indicate that the variable has a high value within the dataset. If it is blue, it means that the value is low.
-\end{itemize}
+Figure~\ref{fig:shap_values} suggests that when the network detects that drugs such as Sabutoclax, Paclitaxel Vinblastine are recessed, the probability of predicting a low value for the \(LN\_IC_{50}\) variable increases, since all of them contribute to reducing the prediction value. Applying this knowledge to real life could mean that these drugs are more aggressive against cancer and therefore the amount needed is lower. In fact, according to several studies \cite{Hu2018Sabutoclax, DAguanno2020Bcl2}, Sabutoclax is mainly used in cases where the patient experiences some resistance to standard therapies.
 
-To interpret the image, it is important to note that all variables beginning with "DRUG\_NAME", "Screen Medium", or "SANER" have been one-hot encoded. This encoding explains the pattern of numerous blue dots and only a few red ones, indicating that the model primarily values the absence of these features. In contrast, the variable "DRUG\_ID" retains its original numerical values. Observing the color distribution and SHAP values for this feature suggests that the identifiers may have been stored in a specific order in the dataset, as higher values of "DRUG\_ID" are associated with higher model predictions, and lower values with lower predictions
+Similarly, it can be seen that when the maximum concentration increases the model, so does the probability of predicting a high value for \(LN\_IC_{50}\).
 
-Regarding the listed drugs, their presence appears to be associated with lower predictions for the \(LN\_IC_{50}\) variable, which is considered a favorable outcome for patients. Notably, one of the ten most influential features is linked to the blood sample type. Its presence consistently contributes to lower \(LN\_IC_{50}\) values, reinforcing the hypothesis that genetic or biological factors, such as the type of sample, may significantly influence a patient's response to cancer treatments. This finding supports the broader theory that the human genome plays a crucial role in drug sensitivity
+Regarding the listed drugs, the presence of the first 9 appears to be associated with lower predictions for the \(LN\_IC_{50}\) variable, which is considered a favorable outcome for patients. Notably, one of the 20 most influential features is linked to the blood sample type. Its presence consistently contributes to lower \(LN\_IC_{50}\) values, reinforcing the hypothesis that genetic or biological factors, such as the type of sample, may significantly influence a patient's response to cancer treatments. This finding supports the broader theory that the human genome plays a crucial role in drug sensitivity.
+
+The dependency plot for the variable SANGER\_MODEL\_ID\_SIDM00412, illustrated in Figure~\ref{fig:dependenceSanger}, reveals that, in the cases analysed by SHAP, when this specific blood sample is present, the value of the Growth Properties feature is never set to D/F12. This combination is associated with negative SHAP values for the target variable  \(LN\_IC_{50}\), suggesting that patients corresponding to this sample tend to require a lower dosage of medication. This may indicate a favorable drug sensitivity profile for this particular biological condition.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/shap/dependence_plot_sanger.png}
+    \caption{Dependence plot of variable SANGER\_MODEL\_ID\_SIDM00412 obtained using SHAP. Obtained by analysing 200 examples.}
+    \label{fig:dependenceSanger}
+\end{figure}

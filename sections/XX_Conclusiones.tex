@@ -1,2 +1,13 @@
 \chapter{Conclusions}\label{cap:conclusiones}
 
+This thesis has explored the intersection between machine learning and precision oncology, with the aim of predicting drug sensitivity in cancer using genomic data. Leveraging the Genomics of Drug Sensitivity in Cancer (GDSC) dataset, the study developed and evaluated several predictive models focused primarily on estimating the value \( \text{LN\_IC}_{50} \), a key indicator of drug efficacy.
+
+The initial phase of the research focused on regression, where neural networks demonstrated a strong ability to model complex, non-linear relationships inherent in genomic data. Through careful preprocessing, dimensionality reduction, and hyperparameter optimisation, the best regressor achieved an RMSE of less than 0.5, demonstrating the feasibility of accurately estimating drug response.
+
+To more closely approximate real clinical decisions, the problem was subsequently discretised, transforming it into a classification task to emulate dose estimation. Several approaches were tested, including categorical cross-entropy, focal loss, and custom-designed loss functions that penalised large prediction errors more severely. Despite the inherent complexity and class imbalance, the network maintained reasonable accuracy while respecting the ordinal nature of the problem.
+
+In addition, explainability techniques such as SHAP were explored to interpret model decisions. These insights revealed the most influential genomic and pharmacological characteristics, supporting the hypothesis that patient-specific genomic profiles significantly influence drug efficacy. This not only improved the transparency of the model but also suggested potential biological insights that warrant further investigation.
+
+Comparative experiments with tree-based models, such as XGBoost, confirmed that, although they offer faster training and lower resource consumption, they tend to underperform deep learning models when capturing complex data relationships.
+
+Finally, the work highlights the importance of personalised medicine and the role that machine learning can play in improving treatment strategies. The results demonstrate that integrating genomic data with predictive models offers a promising avenue towards more effective and individualised cancer therapies.

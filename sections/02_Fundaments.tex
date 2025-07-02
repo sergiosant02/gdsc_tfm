@@ -52,7 +52,7 @@ The main types of tree algorithms include:
     \item \textbf{Gradient Boosted Trees}: This technique combines different decision trees, but unlike RandomForest, they are not independent. Each tree is trained with the aim of improving on those examples where the previous one failed. An example of this type of algorithm is XGBoost.
 \end{itemize}
 
-\section{Shap values}
+\section{SHAP values}
 
 Based on Shapley values from cooperative game theory, SHAP is capable of measuring the contribution of a feature to a result, i.e., it quantifies the contribution of variables to the model output, both locally, a single example, and globally, the entire dataset. This allows us to determine which variables are most relevant in a prediction. 
 
@@ -66,7 +66,7 @@ In addition, the implementation in Python \cite{shap} provides numerous graphs, 
     \begin{figure}[H]
         \centering
         \includegraphics[width=1\textwidth]{figures/shap/shapValuesLittle.png}
-        \caption{Example of Shap values representation: Summary plot.}
+        \caption{Example of SHAP values representation: Summary plot with 100 examples.}
         \label{fig:summaryPlot}
     \end{figure}
 
@@ -82,7 +82,7 @@ In addition, the implementation in Python \cite{shap} provides numerous graphs, 
     \begin{figure}[H]
         \centering
         \includegraphics[width=1\textwidth]{figures/shap/force_plot.png}
-        \caption{Example of Shap values representation: Force plot.}
+        \caption{Example of SHAP values representation: Force plot with 100 examples.}
         \label{fig:forcePlot}
     \end{figure}
 
@@ -92,7 +92,7 @@ In addition, the implementation in Python \cite{shap} provides numerous graphs, 
     \begin{figure}[H]
         \centering
         \includegraphics[width=1\textwidth]{figures/shap/depence_plot.png}
-        \caption{Example of Shap values representation: Dependence plot.}
+        \caption{Example of SHAP values representation: Dependence plot with 100 examples.}
         \label{fig:dependecePlot}
     \end{figure}
 
